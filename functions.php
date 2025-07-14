@@ -18,21 +18,18 @@ function getCartCount() {
 function getAriiTerapeuticeMenu() {
     $ariiTerapeuticeMenu = [];
     $ariiTerapeutice = get_terms( array(
-        'taxonomy' => 'arii-terapeutice',
+        'taxonomy' => 'arii_terapeutice',
         'hide_empty' => false,
-        'order_by' => 'count',
-        'order' => 'DESC'
     ) );
     if (!empty($ariiTerapeutice)) {
+        $index = 0;
         foreach ($ariiTerapeutice as $arieTerapeutica) {
-            $ariiTerapeuticeMenu[] = [
-                'id' => $arieTerapeutica->term_id,
+            $ariiTerapeuticeMenu[$index % 3][] = [
                 'name' => $arieTerapeutica->name,
                 'url' => get_term_link($arieTerapeutica->term_id),
-                'img' => get_field('icon', $arieTerapeutica) ?? get_template_directory_uri() . '/img/home-mobile/svg.svg',
-                'image' => get_field('image', $arieTerapeutica) ?? '',
-                'count' => $arieTerapeutica->count
+                'img' => get_field('icon', $arieTerapeutica) ?? get_template_directory_uri() . '/img/home-mobile/svg.svg'
             ];
+            $index ++;
         }
     }
     return $ariiTerapeuticeMenu;
@@ -76,8 +73,7 @@ function fetchAllIngredients() {
                 'name' => $ingredient->post_title,
                 'first_section' => $ingredient->post_content,
                 'second_section' => get_field('block_text_secundar', $ingredient->ID),
-                'image_url' => get_the_post_thumbnail_url($ingredient->ID, 'full'),
-                'ingredient_url' => get_permalink($ingredient->ID)
+                'image_url' => get_the_post_thumbnail_url($ingredient->ID, 'full')
             ];
         }
     }
@@ -86,14 +82,14 @@ function fetchAllIngredients() {
 }
 
 //redirect to ingredients page...
-//add_action( 'template_redirect', 'ingredients_redirrect' );
-//function ingredients_redirrect() {
-//    $queried_post_type = get_query_var('post_type');
-//    if ( is_single() && 'ingrediente' ==  $queried_post_type ) {
-//        wp_redirect(  get_the_permalink(167), 301 );
-//        exit;
-//    }
-//}
+add_action( 'template_redirect', 'ingredients_redirrect' );
+function ingredients_redirrect() {
+    $queried_post_type = get_query_var('post_type');
+    if ( is_single() && 'ingrediente' ==  $queried_post_type ) {
+        wp_redirect(  get_the_permalink(167), 301 );
+        exit;
+    }
+}
 /** end redirrect*/
 
 
@@ -268,13 +264,13 @@ function getFooterMenu($menuName = 'Suport Clienti') {
 remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
 
 // Breadcrumbs
-function custom_breadcrumbs($isMobile = false) {
+function custom_breadcrumbs() {
 
     // Settings
-    $separator          = '';
+    $separator          = '/';
     $breadcrums_id      = 'breadcrumbs';
     $breadcrums_class   = 'breadcrumbs';
-    $home_title         = 'Prima paginǎ';
+    $home_title         = 'Acasa';
 
     // If you have any custom post types with custom taxonomies, put the taxonomy name below (e.g. product_cat)
     $custom_taxonomy    = 'product_cat';
@@ -283,215 +279,215 @@ function custom_breadcrumbs($isMobile = false) {
     global $post,$wp_query;
 
     // Do not display on the homepage
-    if ( is_front_page() ) { return;}
+    if ( !is_front_page() ) {
 
-    // Home page
-    echo '<bq-breadcrumb-item aria-label="Label" class="bread-link bread-home" href="' . get_home_url() . '" title="' . $home_title . '">' . $home_title . '</bq-breadcrumb-item>';
-    echo $isMobile == true ? $separator : '';
-    if ( is_archive() && !is_tax() && !is_category() && !is_tag() ) {
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-archive">' . post_type_archive_title('', false) . '</bq-breadcrumb-item>';
-    } else if ( is_archive() && is_tax() && !is_category() && !is_tag() ) {
-        // If post is a custom post type
-        $post_type = get_post_type();
-
-        // If it is a custom post type display name and link
-        if(is_tax()) {
-            $post_type_object = get_post_type_object($post_type);
-            $post_type_archive = get_post_type_archive_link($post_type);
-            $term = get_term_by('slug', get_query_var( 'term' ), get_query_var( 'taxonomy' ) );
-            echo '<bq-breadcrumb-item aria-label="Label" class="sss bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . ucfirst(str_replace('_', ' ', $post_type_object->labels->name)) . '</bq-breadcrumb-item>';
-
-
-        }
-
-        $custom_tax_name = get_queried_object()->name;
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-archive">' . $custom_tax_name . '</bq-breadcrumb-item>';
-
-    } else if ( is_single() ) {
-        // If post is a custom post type
-        $post_type = get_post_type();
-
-        // If it is a custom post type display name and link
-        if($post_type != 'post') {
-
-            $post_type_object = get_post_type_object($post_type);
-            $post_type_archive = get_post_type_archive_link($post_type);
-            if ($post_type == 'cariere') {
-                $post_type_archive = get_permalink(209);
-            }
-
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</bq-breadcrumb-item>';
-            echo $separator;
-
-        } elseif ($post_type == 'post') {
-            $post_type_object = get_post_type_object($post_type);
-            $post_type_archive = get_post_type_archive_link($post_type);
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</bq-breadcrumb-item>';
-            echo $separator;
-        }
-
-        // Get post category info
-        $category = get_the_category();
-        if(!empty($category) && count($category) > 1) {
-
-            // Get last category post is in
-            $last_category = end(array_values($category));
-
-            // Get parent any categories and create array
-            $get_cat_parents = rtrim(get_category_parents($last_category->term_id, true, ','),',');
-            $cat_parents = explode(',',$get_cat_parents);
-
-            // Loop through parent categories and store in variable $cat_display
-            $cat_display = '';
-            foreach($cat_parents as $parents) {
-                $cat_display .= $parents;
-                $cat_display .= $separator;
-            }
-
-        }
-
-        // If it's a custom post type within a custom taxonomy
-        $taxonomy_exists = taxonomy_exists($custom_taxonomy);
-        if(empty($last_category) && !empty($custom_taxonomy) && $taxonomy_exists) {
-
-            $taxonomy_terms = get_the_terms( $post->ID, $custom_taxonomy );
-            if (!empty($taxonomy_terms)) {
-                $cat_id         = $taxonomy_terms[0]->term_id;
-                $cat_nicename   = $taxonomy_terms[0]->slug;
-                $cat_link       = get_term_link($taxonomy_terms[0]->term_id, $custom_taxonomy);
-                $cat_name       = $taxonomy_terms[0]->name;
-            }
-        }
-
-        // Check if the post is in a category
-        if(!empty($last_category)) {
-            echo $cat_display;
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</bq-breadcrumb-item>';
-
-            // Else if post is in a custom taxonomy
-        } else if(!empty($cat_id)) {
-
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-cat bread-cat-' . $cat_id . ' bread-cat-' . $cat_nicename . '" href="' . $cat_link . '" title="' . $cat_name . '">' . $cat_name . '</bq-breadcrumb-item>';
-            echo $separator;
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</bq-breadcrumb-item>';
-
-        } else {
-
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</bq-breadcrumb-item>';
-
-        }
-
-    } else if ( is_category() ) {
-
-        // Category page
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-cat">' . single_cat_title('', false) . '</bq-breadcrumb-item>';
-
-    } else if ( is_page() ) {
-
-        // Standard page
-        if( $post->post_parent ){
-
-            // If child page, get parents
-            $anc = get_post_ancestors( $post->ID );
-
-            // Get parents in the right order
-            $anc = array_reverse($anc);
-
-            // Parent page loop
-            if ( !isset( $parents ) ) $parents = null;
-            foreach ( $anc as $ancestor ) {
-                $parents .= '<bq-breadcrumb-item aria-label="Label" class="bread-parent bread-parent-' . $ancestor . '" href="' . get_permalink($ancestor) . '" title="' . get_the_title($ancestor) . '">' . get_the_title($ancestor) . '</bq-breadcrumb-item>';
-                $parents .= $separator;
-            }
-
-            // Display parent pages
-            echo $parents;
-
-            // Current page
-            echo '<bq-breadcrumb-item aria-label="Label" title="' . get_the_title() . '"> ' . get_the_title() . '</bq-breadcrumb-item>';
-
-        } else {
-
-            // Just display current page if not parents
-            echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-' . $post->ID . '"> ' . get_the_title() . '</bq-breadcrumb-item>';
-
-        }
-
-    } else if ( is_tag() ) {
-
-        // Tag page
-
-        // Get tag information
-        $term_id        = get_query_var('tag_id');
-        $taxonomy       = 'post_tag';
-        $args           = 'include=' . $term_id;
-        $terms          = get_terms( $taxonomy, $args );
-        $get_term_id    = $terms[0]->term_id;
-        $get_term_slug  = $terms[0]->slug;
-        $get_term_name  = $terms[0]->name;
-
-        // Display the tag name
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-tag-' . $get_term_id . ' bread-tag-' . $get_term_slug . '">' . $get_term_name . '</bq-breadcrumb-item>';
-
-    } elseif ( is_day() ) {
-
-        // Day archive
-
-        // Year link
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-year bread-year-' . get_the_time('Y') . '" href="' . get_year_link( get_the_time('Y') ) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</bq-breadcrumb-item>';
+        // Home page
+        echo '<a class="bread-link bread-home" href="' . get_home_url() . '" title="' . $home_title . '">' . $home_title . '</a>';
         echo $separator;
+        if ( is_archive() && !is_tax() && !is_category() && !is_tag() ) {
+            echo '<span class="bread-current bread-archive">' . post_type_archive_title('', false) . '</span>';
+        } else if ( is_archive() && is_tax() && !is_category() && !is_tag() ) {
+            // If post is a custom post type
+            $post_type = get_post_type();
 
-        // Month link
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-month bread-month-' . get_the_time('m') . '" href="' . get_month_link( get_the_time('Y'), get_the_time('m') ) . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</bq-breadcrumb-item>';
-        echo $separator;
+            // If it is a custom post type display name and link
+            if(is_tax()) {
+                $post_type_object = get_post_type_object($post_type);
+                $post_type_archive = get_post_type_archive_link($post_type);
+                $term = get_term_by('slug', get_query_var( 'term' ), get_query_var( 'taxonomy' ) );
+                echo '<a class="bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . ucfirst(str_replace('_', ' ', $term->taxonomy)) . '</a>';
+                echo $separator;
 
-        // Day display
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-' . get_the_time('j') . '"> ' . get_the_time('jS') . ' ' . get_the_time('M') . ' Archives</bq-breadcrumb-item>';
+            }
 
-    } else if ( is_month() ) {
+            $custom_tax_name = get_queried_object()->name;
+            echo '<span class="bread-current bread-archive">' . $custom_tax_name . '</span>';
 
-        // Month Archive
+        } else if ( is_single() ) {
+            // If post is a custom post type
+            $post_type = get_post_type();
 
-        // Year link
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-year bread-year-' . get_the_time('Y') . '" href="' . get_year_link( get_the_time('Y') ) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</bq-breadcrumb-item>';
-        echo '<li class="separator separator-' . get_the_time('Y') . '"> ' . $separator . ' </li>';
+            // If it is a custom post type display name and link
+            if($post_type != 'post') {
 
-        // Month display
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-month bread-month-' . get_the_time('m') . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</bq-breadcrumb-item>';
+                $post_type_object = get_post_type_object($post_type);
+                $post_type_archive = get_post_type_archive_link($post_type);
+                if ($post_type == 'cariere') {
+                    $post_type_archive = get_permalink(209);
+                }
 
-    } else if ( is_year() ) {
+                echo '<a class="bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
+                echo $separator;
 
-        // Display year archive
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-current-' . get_the_time('Y') . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</bq-breadcrumb-item>';
+            } elseif ($post_type == 'post') {
+                $post_type_object = get_post_type_object($post_type);
+                $post_type_archive = get_post_type_archive_link($post_type);
+                echo '<a class="bread-cat bread-custom-post-type-' . $post_type . '" href="' . $post_type_archive . '" title="' . $post_type_object->labels->name . '">' . $post_type_object->labels->name . '</a>';
+                echo $separator;
+            }
 
-    } else if ( is_author() ) {
+            // Get post category info
+            $category = get_the_category();
+            if(!empty($category) && count($category) > 1) {
 
-        // Auhor archive
+                // Get last category post is in
+                $last_category = end(array_values($category));
 
-        // Get the author information
-        global $author;
-        $userdata = get_userdata( $author );
+                // Get parent any categories and create array
+                $get_cat_parents = rtrim(get_category_parents($last_category->term_id, true, ','),',');
+                $cat_parents = explode(',',$get_cat_parents);
 
-        // Display author name
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-current-' . $userdata->user_nicename . '" title="' . $userdata->display_name . '">' . 'Author: ' . $userdata->display_name . '</bq-breadcrumb-item>';
+                // Loop through parent categories and store in variable $cat_display
+                $cat_display = '';
+                foreach($cat_parents as $parents) {
+                    $cat_display .= $parents;
+                    $cat_display .= $separator;
+                }
 
-    } else if ( get_query_var('paged') ) {
+            }
 
-        // Paginated archives
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-current-' . get_query_var('paged') . '" title="Page ' . get_query_var('paged') . '">'.__('Page') . ' ' . get_query_var('paged') . '</bq-breadcrumb-item>';
+            // If it's a custom post type within a custom taxonomy
+            $taxonomy_exists = taxonomy_exists($custom_taxonomy);
+            if(empty($last_category) && !empty($custom_taxonomy) && $taxonomy_exists) {
 
-    } else if ( is_search() ) {
+                $taxonomy_terms = get_the_terms( $post->ID, $custom_taxonomy );
+                if (!empty($taxonomy_terms)) {
+                    $cat_id         = $taxonomy_terms[0]->term_id;
+                    $cat_nicename   = $taxonomy_terms[0]->slug;
+                    $cat_link       = get_term_link($taxonomy_terms[0]->term_id, $custom_taxonomy);
+                    $cat_name       = $taxonomy_terms[0]->name;
+                }
+            }
 
-        // Search results page
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-current-' . get_search_query() . '" title="Search results for: ' . get_search_query() . '">Rezultatele cautarii: ' . get_search_query() . '</bq-breadcrumb-item>';
+            // Check if the post is in a category
+            if(!empty($last_category)) {
+                echo $cat_display;
+                echo '<span class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</span>';
 
-    } elseif ( is_404() ) {
+                // Else if post is in a custom taxonomy
+            } else if(!empty($cat_id)) {
 
-        // 404 page
-        echo '<bq-breadcrumb-item aria-label="Label">' . 'Error 404' . '</bq-breadcrumb-item>';
-    } else {
-        echo  $separator;
-        echo '<bq-breadcrumb-item aria-label="Label" class="bread-current bread-default-' . $post->ID . '"> ' . single_post_title('', false) . '</bq-breadcrumb-item>';
+                echo '<a class="bread-cat bread-cat-' . $cat_id . ' bread-cat-' . $cat_nicename . '" href="' . $cat_link . '" title="' . $cat_name . '">' . $cat_name . '</a>';
+                echo $separator;
+                echo '<span class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</span>';
+
+            } else {
+
+                echo '<span class="bread-current bread-' . $post->ID . '" title="' . get_the_title() . '">' . get_the_title() . '</span>';
+
+            }
+
+        } else if ( is_category() ) {
+
+            // Category page
+            echo '<span class="bread-current bread-cat">' . single_cat_title('', false) . '</span>';
+
+        } else if ( is_page() ) {
+
+            // Standard page
+            if( $post->post_parent ){
+
+                // If child page, get parents
+                $anc = get_post_ancestors( $post->ID );
+
+                // Get parents in the right order
+                $anc = array_reverse($anc);
+
+                // Parent page loop
+                if ( !isset( $parents ) ) $parents = null;
+                foreach ( $anc as $ancestor ) {
+                    $parents .= '<a class="bread-parent bread-parent-' . $ancestor . '" href="' . get_permalink($ancestor) . '" title="' . get_the_title($ancestor) . '">' . get_the_title($ancestor) . '</a>';
+                    $parents .= $separator;
+                }
+
+                // Display parent pages
+                echo $parents;
+
+                // Current page
+                echo '<span title="' . get_the_title() . '"> ' . get_the_title() . '</span>';
+
+            } else {
+
+                // Just display current page if not parents
+                echo '<span class="bread-current bread-' . $post->ID . '"> ' . get_the_title() . '</span>';
+
+            }
+
+        } else if ( is_tag() ) {
+
+            // Tag page
+
+            // Get tag information
+            $term_id        = get_query_var('tag_id');
+            $taxonomy       = 'post_tag';
+            $args           = 'include=' . $term_id;
+            $terms          = get_terms( $taxonomy, $args );
+            $get_term_id    = $terms[0]->term_id;
+            $get_term_slug  = $terms[0]->slug;
+            $get_term_name  = $terms[0]->name;
+
+            // Display the tag name
+            echo '<span class="bread-current bread-tag-' . $get_term_id . ' bread-tag-' . $get_term_slug . '">' . $get_term_name . '</span>';
+
+        } elseif ( is_day() ) {
+
+            // Day archive
+
+            // Year link
+            echo '<a class="bread-year bread-year-' . get_the_time('Y') . '" href="' . get_year_link( get_the_time('Y') ) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
+            echo $separator;
+
+            // Month link
+            echo '<a class="bread-month bread-month-' . get_the_time('m') . '" href="' . get_month_link( get_the_time('Y'), get_the_time('m') ) . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</a>';
+            echo $separator;
+
+            // Day display
+            echo '<span class="bread-current bread-' . get_the_time('j') . '"> ' . get_the_time('jS') . ' ' . get_the_time('M') . ' Archives</span>';
+
+        } else if ( is_month() ) {
+
+            // Month Archive
+
+            // Year link
+            echo '<a class="bread-year bread-year-' . get_the_time('Y') . '" href="' . get_year_link( get_the_time('Y') ) . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</a>';
+            echo '<li class="separator separator-' . get_the_time('Y') . '"> ' . $separator . ' </li>';
+
+            // Month display
+            echo '<span class="bread-month bread-month-' . get_the_time('m') . '" title="' . get_the_time('M') . '">' . get_the_time('M') . ' Archives</span>';
+
+        } else if ( is_year() ) {
+
+            // Display year archive
+            echo '<span class="bread-current bread-current-' . get_the_time('Y') . '" title="' . get_the_time('Y') . '">' . get_the_time('Y') . ' Archives</span>';
+
+        } else if ( is_author() ) {
+
+            // Auhor archive
+
+            // Get the author information
+            global $author;
+            $userdata = get_userdata( $author );
+
+            // Display author name
+            echo '<span class="bread-current bread-current-' . $userdata->user_nicename . '" title="' . $userdata->display_name . '">' . 'Author: ' . $userdata->display_name . '</span>';
+
+        } else if ( get_query_var('paged') ) {
+
+            // Paginated archives
+            echo '<span class="bread-current bread-current-' . get_query_var('paged') . '" title="Page ' . get_query_var('paged') . '">'.__('Page') . ' ' . get_query_var('paged') . '</span>';
+
+        } else if ( is_search() ) {
+
+            // Search results page
+            echo '<span class="bread-current bread-current-' . get_search_query() . '" title="Search results for: ' . get_search_query() . '">Rezultatele cautarii: ' . get_search_query() . '</span>';
+
+        } elseif ( is_404() ) {
+
+            // 404 page
+            echo '<span>' . 'Error 404' . '</span>';
+        } else {
+            echo '<span class="bread-current bread-' . $post->ID . '"> ' . single_post_title('', false) . '</span>';
+        }
     }
 }
 
@@ -559,6 +555,9 @@ function so_27971630_product_query( $q ){
     }
 }
 
+function new_after_loop_shop_per_page() {
+    update_option( 'woocommerce_catalog_rows', 5 );
+}
 function getAllAfectiuni($type = 'string') {
     $afectiuni = getPostTitles($postType = 'afectiuni');
     $afectiuniResponse = '';
@@ -642,6 +641,11 @@ function getCategoryColor($productTerms) {
     return 'orange';
     //return get_field('culoare_categorie', reset($productTerms));
 }
+add_action( 'woocommerce_before_shop_loop', 'woocommerce_pagination', 10 );
+add_action( 'woocommerce_after_shop_loop', 'new_after_loop_shop_per_page', 10 );
+remove_action( 'woocommerce_after_shop_loop', 'woocommerce_pagination', 10 );
+remove_action( 'woocommerce_account_content', 'woocommerce_output_all_notices', 5 );
+
 
 function wphub_register_settings() {
     add_option( 'wphub_use_api', '1');
@@ -659,11 +663,11 @@ add_action('admin_menu', 'wphub_register_options_page');
 // Disable autoptimize on pages with the word "test" in the URL
 add_filter('autoptimize_filter_noptimize','my_ao_noptimize',10,0);
 function my_ao_noptimize() {
-    if (strpos($_SERVER['REQUEST_URI'],'despre-companie')!==false) {
-        return true;
-    } else {
-        return false;
-    }
+if (strpos($_SERVER['REQUEST_URI'],'despre-companie')!==false) {
+return true;
+} else {
+return false;
+}
 }
 
 function wphub_options_page() {
@@ -756,31 +760,24 @@ function cf_search_distinct( $where ) {
 add_filter( 'posts_distinct', 'cf_search_distinct' );
 
 function pd_search_posts_per_page($query) {
-    if ( !$query->is_main_query() ) {
-        return $query;
-    }
-
     if ( $query->is_search ) {
         $keyword = $query->get('s');
         $keyword = strtolower($keyword);
         if (strpos($keyword, 'thistle') !== false || strpos($keyword, 'silymarin') !== false) {
             $query->set('s', 'Silimarina');
         }
-        if (!is_admin()) {
-            $query->set( 'post_type', array('product','page', 'post', 'ingrediente') );
-        }
+    	if (!is_admin()) {
+		$query->set( 'post_type', array('product','page', 'post', 'ingrediente') );
+   	}
         $query->set( 'posts_per_page', '100' );
     }
     return $query;
 }
 add_filter( 'pre_get_posts','pd_search_posts_per_page' );
-add_filter( 'fibofilters/config/products_per_page', function (): int {
-    return 18;
-} );
-add_filter( 'fibofilters/config/pagination_selectors', fn() => [ '.pagination' ] );
+
 add_filter( 'posts_orderby', function($q) {
-    if ( ! is_search() || is_admin() ) return $q;
-    return 'CASE alevia_posts.post_type WHEN "product" then 10 WHEN "post" THEN 9 WHEN "ingrediente" THEN 8 ELSE 5 END DESC, alevia_posts.post_title LIKE \'%' . get_search_query() . '%\' DESC';
+        if ( ! is_search() || is_admin() ) return $q;
+        return 'CASE alevia_posts.post_type WHEN "product" then 10 WHEN "post" THEN 9 WHEN "ingrediente" THEN 8 ELSE 5 END DESC, alevia_posts.post_title LIKE \'%' . get_search_query() . '%\' DESC';
 });
 
 // WEBBING removals for Google PageSpeed
@@ -799,9 +796,9 @@ add_filter('xmlrpc_enabled', '__return_false');
 remove_action( 'wp_head', 'wlwmanifest_link' ) ;
 
 function disable_pingback( &$links ) {
-    foreach ( $links as $l => $link )
-        if ( 0 === strpos( $link, get_option( 'home' ) ) )
-            unset($links[$l]);
+ foreach ( $links as $l => $link )
+ if ( 0 === strpos( $link, get_option( 'home' ) ) )
+ unset($links[$l]);
 }
 add_action( 'pre_ping', 'disable_pingback' );
 
@@ -825,6 +822,10 @@ add_filter( 'woocommerce_single_product_image_thumbnail_html', 'e12_remove_produ
 
 
 function hasPromoCode($productId) {
+    if (has_term(120, 'product_tag', $productId)) {
+        return false;
+    }
+
     $p = wc_get_product($productId);
     if ($p->is_on_sale()) {
         return true;
@@ -834,7 +835,7 @@ function hasPromoCode($productId) {
         return true;
     }
 
-    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii-terapeutice']);
+    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii_terapeutice']);
     foreach ($productCategories as $category) {
         if (get_field('tip_promotie', $category) !== 'dezactivat' && !empty(get_field('valoare_promotie', $category))) {
             return true;
@@ -846,7 +847,7 @@ function hasPromoCode($productId) {
 }
 
 function getPromoCode($productId) {
-
+	
     $p = wc_get_product($productId);
     if ($p->is_on_sale()) {
         $x = $p->get_regular_price('edit');
@@ -858,7 +859,7 @@ function getPromoCode($productId) {
         return formatPromoMessage(get_field('tip_promotie', $productId), get_field('valoare_promotie', $productId));
     }
 
-    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii-terapeutice']);
+    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii_terapeutice']);
     foreach ($productCategories as $category) {
         if (get_field('tip_promotie', $category) !== 'dezactivat' && !empty(get_field('valoare_promotie', $category))) {
             return formatPromoMessage(get_field('tip_promotie', $category), get_field('valoare_promotie', $category));
@@ -888,7 +889,7 @@ function getPromoText($productId) {
         return formatPromoMessageDescription(get_field('tip_promotie', $productId), get_field('descriere_extra', $productId));
     }
 
-    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii-terapeutice']);
+    $productCategories = wp_get_post_terms($productId,['product_cat', 'arii_terapeutice']);
     foreach ($productCategories as $category) {
         if (get_field('tip_promotie', $category) !== 'dezactivat' && !empty(get_field('descriere_extra', $category))) {
             return formatPromoMessageDescription(get_field('tip_promotie', $category), get_field('descriere_extra', $category));
@@ -922,24 +923,24 @@ function exportProducts() {
     );
 
     $loop = new WP_Query( $args );
-    $arr = [];
+$arr = [];
     while ( $loop->have_posts() ) : $loop->the_post();
         global $product;
         $arr[] = [
-            'name' => get_the_title(),
-            'sku' => $product->get_sku(),
-            'grupa_produs' => getCatName(wp_get_post_terms(get_the_ID(),'product_cat')),
-            'denumire_produs' => get_the_title(),
-            'afectiune' => formatField(get_field('afectiuni')),
-            'produse_similare' => formatField(get_field('produse_similare')),
-            'produse_similare_sku' => getProductSkus(get_field('produse_similare')),
-            'ingrediente' => formatField(get_field('ingrediente')),
-            'descriere_produs' => strip_tags(get_field('descriere')),
-            'descriere_produs_short' => get_the_content(),
-            'arii_terapeutice' => getAriiTerapeuticeName(wp_get_post_terms(get_the_ID(),'arii-terapeutice'))
+                'name' => get_the_title(),
+                'sku' => $product->get_sku(),
+                'grupa_produs' => getCatName(wp_get_post_terms(get_the_ID(),'product_cat')),
+                'denumire_produs' => get_the_title(),
+                'afectiune' => formatField(get_field('afectiuni')),
+                'produse_similare' => formatField(get_field('produse_similare')),
+                'produse_similare_sku' => getProductSkus(get_field('produse_similare')),
+                'ingrediente' => formatField(get_field('ingrediente')),
+                'descriere_produs' => strip_tags(get_field('descriere')),
+                'descriere_produs_short' => get_the_content(),
+                'arii_terapeutice' => getAriiTerapeuticeName(wp_get_post_terms(get_the_ID(),'arii_terapeutice'))
         ];
     endwhile;
-    print_r(json_encode($arr));
+print_r(json_encode($arr));
     wp_reset_query();
 }
 
@@ -977,12 +978,12 @@ function getCatName($field) {
 
 function getAriiTerapeuticeName($field) {
     $returnStr = [];
-    if (!empty($field)) {
-        foreach ($field as $subfield) {
-            $returnStr[] = $subfield->name;
+        if (!empty($field)) {
+            foreach ($field as $subfield) {
+                $returnStr[] = $subfield->name;
+            }
         }
-    }
-    return implode(',', $returnStr);
+        return implode(',', $returnStr);
 }
 
 function resetProductTags()
@@ -1012,105 +1013,14 @@ function determineProductAddToCartText($product)
     return $productAddToCartText;
 }
 
-function save_last_seen_products() {
-    if (is_user_logged_in() && !empty($_POST['product_ids'])) {
-        $user_id = get_current_user_id();
-        $product_ids = array_map('intval', $_POST['product_ids']);
-        update_user_meta($user_id, 'last_seen_products', $product_ids);
-        wp_send_json_success('Last seen products updated.');
-    }
-    wp_send_json_error('Not logged in or no products provided.');
-}
-add_action('wp_ajax_save_last_seen_products', 'save_last_seen_products');
-
-function fetch_last_seen_products() {
-    $product_ids = isset($_POST['product_ids']) ? $_POST['product_ids'] : array();
-
-    // Check if the user is logged in and fetch stored product IDs
-    if (is_user_logged_in()) {
-        $user_id = get_current_user_id();
-        $stored_product_ids = get_user_meta($user_id, 'last_seen_products', true);
-        if (!empty($stored_product_ids)) {
-            $product_ids = $stored_product_ids;
-        }
-    }
-
-    if (!empty($product_ids)) {
-        $args = array(
-            'post_type' => 'product',
-            'post__in' => $product_ids,
-            'orderby' => 'post__in'
-        );
-
-        $query = new WP_Query($args);
-
-        if ($query->have_posts()) {
-            $response = array();
-
-            while ($query->have_posts()) {
-                $query->the_post();
-                $response[] = array(
-                    'title' => get_the_title(),
-                    'link'  => get_permalink()
-                );
-            }
-
-            wp_reset_postdata();
-            wp_send_json_success($response);
-        }
-    }
-
-    wp_send_json_error('No products found');
-}
-function enqueue_last_seen_script() {
-    wp_enqueue_script( 'last-seen-products', get_template_directory_uri() . '/last-seen-products.js', array( 'jquery' ), null, true );
-
-    // Localize script to pass data
-    wp_localize_script( 'last-seen-products', 'lastSeenAjax', array(
-        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-        'isUserLoggedIn' => is_user_logged_in()
-    ));
-}
-add_action( 'wp_enqueue_scripts', 'enqueue_last_seen_script' );
-
-function display_last_seen_products() {
-
-    $arr = array();
-    $product_ids = array();
-
-    // Check if the user is logged in and fetch from user meta
-    if (is_user_logged_in()) {
-        $user_id = get_current_user_id();
-        $product_ids = get_user_meta($user_id, 'last_seen_products', true);
-    } else {
-        // For guests, get from session storage (via JS)
-        if (isset($_COOKIE['lastSeenProducts'])) {
-            if (isset($_COOKIE['lastSeenProducts'])) {
-                $product_ids = json_decode(stripslashes($_COOKIE['lastSeenProducts']), true);
-            }
-        }
-    }
-
-    if (empty($product_ids) && isset($_COOKIE['lastSeenProducts'])) {
-        $product_ids = json_decode(stripslashes($_COOKIE['lastSeenProducts']), true);
-    }
-    $product_idsx = [];
-    foreach ($product_ids as $product_id) {
-        if (!empty(wc_get_product($product_id))) {
-            $product_idsx[] = $product_id;
-        }
-    }
-    return $product_idsx;
-}
-
 // .webp patch
 
 add_filter('mod_rewrite_rules', function($rules) {
-    return str_replace(
-        "RewriteCond %{REQUEST_FILENAME} !-d\n",
-        "RewriteCond %{REQUEST_FILENAME} !-d\nRewriteCond %{REQUEST_URI} !(.*webp)$\n",
-        $rules
-    );
+	return str_replace(
+		"RewriteCond %{REQUEST_FILENAME} !-d\n",
+		"RewriteCond %{REQUEST_FILENAME} !-d\nRewriteCond %{REQUEST_URI} !(.*webp)$\n",
+		$rules
+	);
 });
 
 // hide ACF notification
@@ -1124,168 +1034,92 @@ add_filter( 'acf/admin/prevent_escaped_html_notice', '__return_true' );
  * @param bool Can edit the robots & htacess data.
  */
 
-add_filter( 'rank_math/can_edit_file', '__return_true' );
+ add_filter( 'rank_math/can_edit_file', '__return_true' );
 
-function retrieveLinkInformation($link) {
-    $dom = new DOMDocument;
-    libxml_use_internal_errors(true); // Suppress parsing errors
-    $dom->loadHTML($link);
-    libxml_clear_errors();
-    $links = $dom->getElementsByTagName('a');
+ /*Notificări recenzii */
 
-    foreach ($links as $link) {
-        $href = $link->getAttribute('href');
-        $class = $link->getAttribute('class');
-
-        return ['href' => $href, 'class' => $class, 'text' => trim($link->textContent)];
-    }
-
-    return;
+ function new_comment_moderation_recipients( $emails, $comment_id ) { 
+    return array( 'development@webbing.ro, luiz.iordachioaia@alevia.com.ro, cristina.enache@alevia.com.ro, camelia.nastasi@alevia.com.ro' );
 }
+add_filter( 'comment_moderation_recipients', 'new_comment_moderation_recipients', 24, 2 );
+add_filter( 'comment_notification_recipients', 'new_comment_moderation_recipients', 24, 2 );
 
-function my_infinite_scroll_query() {
-    $args = array(
-        'post_type' => 'post', // Post type to query
-        'posts_per_page' => 6, // Number of posts to show per "page"
-        'paged' => isset($_POST['page']) ? intval($_POST['page']) : 1,
-    );
+/*Transport gratuit pentru produse dintr-o anumită categorie - Sameday */
 
-    $query = new WP_Query($args);
-
-    if ($query->have_posts()) :
-        while ($query->have_posts()) : $query->the_post();
-            if (empty($displayed[get_the_ID()])) {
-                $displayed[get_the_ID()] = get_the_ID();
-                echo '<div class="col-sm-6 col-md-4 col-lg-4">';
-                get_template_part( 'entry' );
-                echo '</div>';
-            }
-        endwhile;
-    endif;
-
-    wp_reset_postdata(); // Reset post data after custom query
-    die();
-}
-add_action('wp_ajax_my_infinite_scroll', 'my_infinite_scroll_query');
-add_action('wp_ajax_nopriv_my_infinite_scroll', 'my_infinite_scroll_query');
-
-function enqueue_infinite_scroll_js() {
-    wp_enqueue_script(
-        'infinite-scroll',
-        get_template_directory_uri() . '/js/infinite-scroll.js',
-        array('jquery'),
-        null,
-        true
-    );
-
-    wp_localize_script('infinite-scroll', 'infinite_scroll_params', array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'current_page' => get_query_var('paged') ? get_query_var('paged') : 1,
-        'max_page' => $GLOBALS['wp_query']->max_num_pages,
-    ));
-}
-add_action('wp_enqueue_scripts', 'enqueue_infinite_scroll_js');
-
-
-function get_top_selling_products( $limit = 10 ) {
-    global $wpdb;
-
-    $date_3_months_ago = date('Y-m-d H:i:s', strtotime('-3 months'));
-
-    $query = new WC_Order_Query( array(
-        'status'        => 'completed',
-        'date_created'  => '>' . $date_3_months_ago,
-        'return'        => 'objects', // 'ids' for order IDs, or 'objects' for WC_Order objects
-    ) );
-
-    $order_ids = $query->get_orders();
-    if ( empty( $order_ids ) ) {
-        return [];
-    }
-
-    foreach ( $order_ids as $order ) {
-        foreach ( $order->get_items() as $item ) {
-            $product_id = $item->get_product_id();
-            $qty = $item->get_quantity();
-
-            if ( ! isset( $product_sales[ $product_id ] ) ) {
-                $product_sales[ $product_id ] = 0;
-            }
-
-            $product_sales[ $product_id ] += $qty;
+add_action('curiero_overwrite_sameday_shipping', 'curiero_overwrite_sameday_shipping_for_product_categories', 10, 1);
+add_action('curiero_overwrite_sameday_easybox_shipping', 'curiero_overwrite_sameday_shipping_for_product_categories', 10, 1);
+function curiero_overwrite_sameday_shipping_for_product_categories($args)
+{
+    foreach (WC()->cart->get_cart() as $item) {
+        if (has_term([119], 'product_cat', $item['product_id'])) {
+            $args['cost'] = 0;
+            $args['label'] = rtrim($args['label'], ': Gratuit') . ': Gratuit';
+            return $args;
         }
     }
-
-// Optional: sort by quantity sold (descending)
-    arsort( $product_sales );
-
-    $top_products = [];
-
-    foreach ( $product_sales as $product_id => $product_sale ) {
-        $product    = wc_get_product( $product_id );
-
-        // Ensure product exists, is published, and is in stock
-        if ( $product && $product->get_status() === 'publish' && $product->is_in_stock() ) {
-            $top_products[] = $product;
-        }
-
-        // Stop once we have enough valid products
-        if ( count( $top_products ) >= $limit ) {
-            break;
-        }
-    }
-
-    return $top_products;
+    return $args;
 }
 
-function displayPromoLabel($product) {
-    $published_date = get_the_date( 'U', $product->get_id() );// UNIX timestamp
-    $thirty_days_ago = strtotime( '-30 days' );
-    if ( $published_date > $thirty_days_ago ) {
-        // Product is older than 30 days
-        $productLabel = ['label' => 'New', 'class' => 'tag_new'];
-        return $productLabel;
-    } else {
-        $regular_price = (float) $product->get_regular_price();
-        $sale_price    = (float) $product->get_sale_price();
+/*Transport gratuit pentru produse dintr-o anumită categorie - Cargus */
 
-        if ( $sale_price && $regular_price && $regular_price > $sale_price ) {
-            $discount_percentage = round( ( ( $regular_price - $sale_price ) / $regular_price ) * 100 );
-            $productLabel = ['label' => '- ' . $discount_percentage . '%', 'class' => 'tag_discount'];
-            return $productLabel;
-        } else {
-            echo $productLabel = null;
+add_action('curiero_overwrite_cargus_shipping', 'curiero_overwrite_cargus_shipping_for_product_categories', 10, 1);
+function curiero_overwrite_cargus_shipping_for_product_categories($args)
+{
+    foreach (WC()->cart->get_cart() as $item) {
+        if (has_term([119], 'product_cat', $item['product_id'])) {
+            $args['cost'] = 0;
+            $args['label'] = rtrim($args['label'], ': Gratuit') . ': Gratuit';
+            return $args;
         }
     }
-
-    return $productLabel;
+    return $args;
 }
 
-add_filter(
-    'fibofilters/filters/custom_sources/taxonomies',
-    function ( $taxonomies ) {
-        $taxonomies[] = [
-            'label'    => 'Solutii Terapeutice',
-            'taxonomy' => 'arii-terapeutice',
-        ];
-        return $taxonomies;
-    }
-);
+/*Eliminare livrare Sameday, păstrare doar easybox */
 
-add_filter(
-    'fibofilters/filters/custom_sources/custom_fields',
-    function ( $custom_fields ) {
-        $custom_fields[] = [
-            'field_slug'  => 'afectiuni', // meta_key
-            'label'       => 'Afectiuni',
-            'label_front' => 'Afectiuni',
-        ];
+add_filter('woocommerce_package_rates', function (array $rates): array {
+    if (isset($rates['sameday'])) unset($rates['sameday']);
+    return $rates;
+  }, 99, 1);
 
-        $custom_fields[] = [
-            'field_slug'  => 'ingrediente', // meta_key
-            'label'       => 'Ingrediente',
-            'label_front' => 'Ingrediente',
-        ];
-        return $custom_fields;
-    }
-);
+
+  /**
+ * @snippet       Bulk Remove Product Categories @ WooCommerce Products Admin
+ * @how-to        businessbloomer.com/woocommerce-customization
+ * @author        Rodolfo Melogli, Business Bloomer
+ * @compatible    WooCommerce 8
+ * @community     https://businessbloomer.com/club/
+ */
+ 
+add_action( 'woocommerce_product_bulk_edit_start', 'bbloomer_bulk_edit_remove_product_category' );
+ 
+/* procedura eliminare produse din categorie specifică */
+
+function bbloomer_bulk_edit_remove_product_category() {
+   ?>    
+   <div class="inline-edit-group">
+      <label class="alignleft">
+         <span class="title">Delete Cat</span>
+         <span class="input-text-wrap">
+            <?php wc_product_dropdown_categories( [ 'class' => 'remove_product_cat', 'name' => 'remove_product_cat', 'show_option_none' => 'Select product category to be removed', 'value_field' => 'term_id' ] ); ?>
+         </span>
+      </label>
+   </div>         
+   <?php
+}
+ 
+add_action( 'woocommerce_product_bulk_edit_save', 'bbloomer_bulk_edit_remove_product_category_save', 9999 );
+  
+function bbloomer_bulk_edit_remove_product_category_save( $product ) {
+   $post_id = $product->get_id();    
+   if ( isset( $_REQUEST['remove_product_cat'] ) ) {
+      $cat_to_remove = $_REQUEST['remove_product_cat'];
+      $categories = $product->get_category_ids();
+      if ( ! in_array( $cat_to_remove, $categories ) ) return;
+      if ( ( $key = array_search( $cat_to_remove, $categories ) ) !== false ) {
+         unset( $categories[$key] );
+      }
+      $product->set_category_ids( $categories );
+      $product->save();
+   }
+}
